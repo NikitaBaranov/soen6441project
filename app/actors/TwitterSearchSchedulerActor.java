@@ -53,7 +53,7 @@ public class TwitterSearchSchedulerActor extends AbstractActor {
      */
     @Override
     public void preStart() {
-        log.info("TwitterSearchSchedulerActor {}-{} started at " + LocalTime.now());
+        log.info("TwitterSearchSchedulerActor {}-{} started at ", this, LocalTime.now());
     }
 
     /**
@@ -61,7 +61,7 @@ public class TwitterSearchSchedulerActor extends AbstractActor {
      */
     @Override
     public void postStop() {
-        log.info("TwitterSearchSchedulerActor {}-{} stopped at " + LocalTime.now());
+        log.info("TwitterSearchSchedulerActor {}-{} stopped at ", this, LocalTime.now());
     }
 
     /**
@@ -81,8 +81,8 @@ public class TwitterSearchSchedulerActor extends AbstractActor {
                 })
                 .match(Register.class, p -> {
                     twitterSearchActors.add(p.actorRef);
-                    log.debug("new registerd Actor = {}", p.actorRef);
-                    log.debug("actors = {}", twitterSearchActors);
+                    log.info("new registerd Actor = {}", p.actorRef);
+                    log.info("actors = {}", twitterSearchActors);
                 })
                 .build();
     }

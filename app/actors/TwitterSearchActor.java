@@ -11,6 +11,7 @@ import models.Tweet;
 import play.libs.Json;
 import services.TenTweetsForKeywordService;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,8 @@ public class TwitterSearchActor extends AbstractActor {
      */
     private ArrayList<String> keyWords = new ArrayList<>();
 
+    private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
+
     /**
      * Creates a new TwitterSearchActor
      * @param out                        Actor to send tweets search service results to
@@ -73,6 +76,19 @@ public class TwitterSearchActor extends AbstractActor {
         return Props.create(TwitterSearchActor.class, out, scheduler, tenTweetsForKeywordService);
     }
 
+    @Override
+    public void preStart() {
+        log.info("TwitterSearchSchedulerActor {}-{} started at ", this, LocalTime.now());
+    }
+
+    /**
+     * Logs the stop time of the
+     */
+    @Override
+    public void postStop() {
+        log.info("TwitterSearchSchedulerActor {}-{} stopped at ", this, LocalTime.now());
+    }
+
     /**
      * Handles refresh and search messages
      * Search message - adds a search phrase to a list the Actor would query
@@ -82,7 +98,7 @@ public class TwitterSearchActor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Refresh.class, newRefresh -> {
-                    //logger.debug("search actor refreshed");
+                    logger.debug("search actor refreshed");
                     if (keyWords.size() > 0) {
                         CompletionStage<Map<String, List<Tweet>>> reply = tenTweetsForKeywordService.getTenTweetsForKeyword(keyWords);
                         reply.thenAccept(r -> out.tell(Json.toJson(r), self()));
@@ -90,7 +106,7 @@ public class TwitterSearchActor extends AbstractActor {
                 })
                 .match(Search.class, newSearch -> {
                     keyWords.add(newSearch.searchKey);
-                    logger.debug("match Search.class keyWords = {}", keyWords.toString());
+                    logger.info("match Search.class keyWords = {}", keyWords.toString());
                     CompletionStage<Map<String, List<Tweet>>> reply = tenTweetsForKeywordService.getTenTweetsForKeyword(keyWords);
                     reply.thenAccept(r -> out.tell(Json.toJson(r), self()));
                 })
